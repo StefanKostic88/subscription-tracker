@@ -1,6 +1,7 @@
-import express, { Express } from "express";
+import express, { Express, Router } from "express";
 import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
+import { userRouter, authRouter, subscriptionRouter } from "./routes";
 
 abstract class CoreApp {
   protected _app: Express;
@@ -9,6 +10,7 @@ abstract class CoreApp {
 
   protected constructor() {
     this._app = express();
+    this.init();
   }
 
   protected init(): void {}
@@ -31,7 +33,16 @@ export class App extends CoreApp {
     return App.instance;
   }
 
-  protected init(): void {}
+  protected init(): void {
+    const router = Router();
+    this._app.use("/api/v1", router);
+
+    // middleware spot
+
+    router.use("/auth", authRouter);
+    router.use("/users", userRouter);
+    router.use("/subscriptions", subscriptionRouter);
+  }
   public startServer(): void {
     this._server = this._app.listen(this._port, () => {
       console.log(`Server running on port: ${this._port}, env: ${NODE_ENV}`);
