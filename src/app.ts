@@ -1,10 +1,11 @@
 import express, { Express } from "express";
 import { Server, IncomingMessage, ServerResponse } from "http";
+import { PORT, NODE_ENV } from "./config/env";
 
 abstract class CoreApp {
   protected _app: Express;
   protected _server?: Server<typeof IncomingMessage, typeof ServerResponse>;
-  protected _port: number = Number(process.env) || 8000;
+  protected _port: number = PORT;
 
   protected constructor() {
     this._app = express();
@@ -33,7 +34,7 @@ export class App extends CoreApp {
   protected init(): void {}
   public startServer(): void {
     this._server = this._app.listen(this._port, () => {
-      console.log(`Server running on port: ${this._port}`);
+      console.log(`Server running on port: ${this._port}, env: ${NODE_ENV}`);
     });
   }
 }
