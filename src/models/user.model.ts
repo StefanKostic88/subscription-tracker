@@ -1,6 +1,36 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema(
+interface UserCreationAttributes {
+  name: string;
+  email: string;
+  password: string;
+}
+
+type UserSchema = UserCreationAttributes;
+// createdAt: Date;
+// lastUpdate?: Date;
+
+interface UserMethods {
+  test: () => void;
+}
+
+interface UserDocument
+  extends mongoose.Document<UserSchema, object, UserSchema>,
+    UserSchema,
+    UserMethods {}
+
+interface UserModel
+  extends mongoose.Model<
+    UserDocument,
+    object,
+    UserMethods,
+    object,
+    UserDocument
+  > {
+  myStatic: () => void;
+}
+
+const userSchema = new mongoose.Schema<UserSchema, UserModel, UserMethods>(
   {
     name: {
       type: String,
@@ -28,6 +58,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<UserSchema, UserModel>("User", userSchema);
 
 export default User;
