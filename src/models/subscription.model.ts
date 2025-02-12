@@ -1,5 +1,26 @@
 import mongoose from "mongoose";
 
+enum Currency {
+  USD = "USD",
+  EUR = "EUR",
+  GBP = "GBP",
+}
+
+enum Frequency {
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
+}
+
+
+
+interface SubscriptionCreationAttributes {
+  name: string;
+  price: string;
+  currency: Currency;
+}
+
 const subscriptionSchema = new mongoose.Schema(
   {
     name: {
@@ -16,12 +37,12 @@ const subscriptionSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD", "EUR", "GBP"],
-      default: "USD",
+      enum: Currency,
+      default: Currency.USD,
     },
     frequency: {
       type: String,
-      enum: ["daily", "weekly", "monthly", "yearly"],
+      enum: Frequency,
     },
     category: {
       type: String,
