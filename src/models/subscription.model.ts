@@ -32,28 +32,14 @@ enum Status {
 
 interface SubscriptionCreationAttributes {
   name: string;
-  price: string;
+  price: number;
+  frequency: string;
   currency: Currency;
   category: Category;
   paymentMethod: string;
   status: Status;
-
-  startDate: {
-    type: Date;
-    required: true;
-    validate: {
-      validator: (value: Date) => boolean;
-      message: string;
-    };
-  };
-
-  renewalDate: {
-    type: Date;
-    validate: {
-      validator: (value: Date) => boolean;
-      message: string;
-    };
-  };
+  startDate: Date;
+  renewalDate: Date;
 
   user: {
     type: typeof mongoose.Schema.Types.ObjectId;
@@ -61,7 +47,33 @@ interface SubscriptionCreationAttributes {
   };
 }
 
-const subscriptionSchema = new mongoose.Schema(
+type SubscriptionShema = SubscriptionCreationAttributes;
+
+interface SubscriptionMethods {
+  test: () => void;
+}
+
+export interface SubscriptionDocument
+  extends mongoose.Document<SubscriptionShema, object, SubscriptionShema>,
+    SubscriptionShema,
+    SubscriptionMethods {}
+
+interface SubscriptionModel
+  extends mongoose.Model<
+    SubscriptionDocument,
+    object,
+    SubscriptionMethods,
+    object,
+    SubscriptionDocument
+  > {
+  myStatic: () => void;
+}
+
+const subscriptionSchema = new mongoose.Schema<
+  SubscriptionShema,
+  SubscriptionModel,
+  SubscriptionMethods
+>(
   {
     name: {
       type: String,
@@ -110,7 +122,7 @@ const subscriptionSchema = new mongoose.Schema(
     renewalDate: {
       type: Date,
       validate: {
-        validator: function (value) {
+        validator: function (value: Date) {
           return value > this.startDate;
         },
         message: "Renewal date must be after the start date",
@@ -130,25 +142,36 @@ const subscriptionSchema = new mongoose.Schema(
 
 subscriptionSchema.pre("save", function (next) {
   if (!this.renewalDate) {
-    const renewalPeriods = {
-      daily: 1,
-      weekly: 7,
-      monthly: 30,
-      yearly: 365,
+    const renewalPeriods: { [key in Frequency]: number } = {
+      [Frequency.DAILY]: 1,
+      [Frequency.WEEKLY]: 7,
+      [Frequency.MONTHLY]: 30,
+      [Frequency.YEARLY]: 365,
     };
     this.renewalDate = new Date(this.startDate);
-    this.renewalDate.setDate(
-      this.renewalDate.getDate() + renewalPeriods[this.frequency]
-    );
+
+    if (Object.values(Frequency).includes(this.frequency as Frequency)) {
+      const period = renewalPeriods[this.frequency as Frequency];
+      this.renewalDate.setDate(this.renewalDate.getDate() + period);
+    } else {
+      console.error("Invalid frequency");
+    }
+
+    // this.renewalDate.setDate(
+    //   this.renewalDate.getDate() + renewalPeriods[this.frequency as Frequency]
+    // );
   }
 
   if (this.renewalDate < new Date()) {
-    this.status = "expired";
+    this.status = Status.EXPIRED;
   }
 
   next();
 });
 
-const Subscription = mongoose.model("Subscription", subscriptionSchema);
+const Subscription = mongoose.model<SubscriptionShema, SubscriptionModel>(
+  "Subscription",
+  subscriptionSchema
+);
 
 export default Subscription;
