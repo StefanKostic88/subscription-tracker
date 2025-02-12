@@ -13,12 +13,52 @@ enum Frequency {
   YEARLY = "yearly",
 }
 
+enum Category {
+  SPORTS = "sports",
+  NEWS = "news",
+  ENTERTAINMENT = "entertainment",
+  LIFESTYLE = "lifestyle",
+  TECHNOLOGY = "technology",
+  FINANCE = "finance",
+  POLITICS = "politics",
+  OTHER = "other",
+}
 
+enum Status {
+  ACTIVE = "active",
+  CANCELLED = "cancelled",
+  EXPIRED = "expired",
+}
 
 interface SubscriptionCreationAttributes {
   name: string;
   price: string;
   currency: Currency;
+  category: Category;
+  paymentMethod: string;
+  status: Status;
+
+  startDate: {
+    type: Date;
+    required: true;
+    validate: {
+      validator: (value: Date) => boolean;
+      message: string;
+    };
+  };
+
+  renewalDate: {
+    type: Date;
+    validate: {
+      validator: (value: Date) => boolean;
+      message: string;
+    };
+  };
+
+  user: {
+    type: typeof mongoose.Schema.Types.ObjectId;
+    ref: string;
+  };
 }
 
 const subscriptionSchema = new mongoose.Schema(
@@ -46,16 +86,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: [
-        "sports",
-        "news",
-        "entertainment",
-        "lifestyle",
-        "technology",
-        "finance",
-        "politics",
-        "other",
-      ],
+      enum: Category,
       required: true,
     },
     paymentMethod: {
@@ -65,8 +96,8 @@ const subscriptionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["active", "cancelled", "expired"],
-      default: "active",
+      enum: Status,
+      default: Status.ACTIVE,
     },
     startDate: {
       type: Date,
