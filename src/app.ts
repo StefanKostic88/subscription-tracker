@@ -1,8 +1,9 @@
-import express, { Express, Router } from "express";
+import express, { Express, Router, json, urlencoded } from "express";
 import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
 import { userRouter, authRouter, subscriptionRouter } from "./routes";
 import DataBaseConnection from "./database/mongodb";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 abstract class CoreApp {
   protected _app: Express;
@@ -40,11 +41,15 @@ export class App extends CoreApp {
     const router = Router();
     this._app.use("/api/v1", router);
 
-    // middleware spot
+    // Middleware spot
+
+    router.use(json());
 
     router.use("/auth", authRouter);
     router.use("/users", userRouter);
     router.use("/subscriptions", subscriptionRouter);
+
+    router.use(errorMiddleware);
   }
   public startServer(): void {
     this._server = this._app.listen(this._port, async () => {
