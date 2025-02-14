@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface UserCreationAttributes {
+export interface UserCreationAttributes {
   name: string;
   email: string;
   password: string;
@@ -14,7 +14,7 @@ interface UserMethods {
   test: () => void;
 }
 
-interface UserDocument
+export interface UserDocument
   extends mongoose.Document<UserSchema, object, UserSchema>,
     UserSchema,
     UserMethods {}

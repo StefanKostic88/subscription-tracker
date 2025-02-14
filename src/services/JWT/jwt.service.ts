@@ -1,7 +1,10 @@
-import { JWT_SECRET } from "../../config/env";
+import { JWT_SECRET, JWT_EXPIRES_IN } from "../../config/env";
+import jwt from "jsonwebtoken";
+import { CustomError } from "../../helpers";
 
 class JwtService {
   private secret: string;
+  private expiresIn = "1d" as const;
 
   public static instance: JwtService;
   private constructor() {
@@ -16,9 +19,26 @@ class JwtService {
     return JwtService.instance;
   }
 
-  public createUser () {}
+  public createUser(user_id: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      jwt.sign(
+        { user_id },
+        this.secret,
+        { expiresIn: this.expiresIn },
+        function (err, token) {
+          if (err || !token) {
+            return reject(
+              // new CustomError(`Error while creating token: ${err}`, 401)
+              new Error(err?.message)
+            );
+          }
+          resolve(token);
+        }
+      );
+    });
+  }
 
-  public verify () {}
+  public verify() {}
 }
 
 export default JwtService;
