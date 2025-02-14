@@ -1,4 +1,5 @@
 import express, { Express, Router, json, urlencoded } from "express";
+import cookieParser from "cookie-parser";
 import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
 import { userRouter, authRouter, subscriptionRouter } from "./routes";
@@ -39,11 +40,12 @@ export class App extends CoreApp {
 
   protected init(): void {
     const router = Router();
-    this._app.use("/api/v1", router);
-
-    // Middleware spot
 
     router.use(json());
+    router.use(urlencoded({ extended: false }));
+    router.use(cookieParser());
+
+    this._app.use("/api/v1", router);
 
     router.use("/auth", authRouter);
     router.use("/users", userRouter);
