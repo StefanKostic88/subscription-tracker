@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 import { User, UserCreationAttributes } from "../../models";
 import { CustomError } from "../../helpers";
 import { JwtService, BcryptService } from "../../services";
+import UserService from "../../services/user/user.service";
 
 const bCrypt = BcryptService.getInstance();
 const jwtService = JwtService.getInstance();
+const userService = UserService.getInstance();
 
 export const signUp = async (
   req: Request<object, object, UserCreationAttributes>,
@@ -20,12 +22,14 @@ export const signUp = async (
   try {
     const { email, password, name } = req.body;
 
-    const existingUser = await User.findOne({ email: email });
+    // const existingUser = await User.findOne({ email: email });
 
-    if (existingUser) {
-      const error = new CustomError("User exists", 409);
-      throw error;
-    }
+    // if (existingUser) {
+    //   const error = new CustomError("User exists", 409);
+    //   throw error;
+    // }
+
+    await userService.checkIfUserEixsts(email);
 
     const hashedPassword = await bCrypt.encryptPassword(password);
 
