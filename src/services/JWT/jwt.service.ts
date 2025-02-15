@@ -1,4 +1,4 @@
-import { JWT_SECRET, JWT_EXPIRES_IN } from "../../config/env";
+import { JWT_SECRET } from "../../config/env";
 import jwt from "jsonwebtoken";
 import { CustomError } from "../../helpers";
 
@@ -28,8 +28,7 @@ class JwtService {
         function (err, token) {
           if (err || !token) {
             return reject(
-              // new CustomError(`Error while creating token: ${err}`, 401)
-              new Error(err?.message)
+              new CustomError(`Error while creating token: ${err}`, 401)
             );
           }
           resolve(token);
