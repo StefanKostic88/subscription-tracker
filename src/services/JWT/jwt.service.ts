@@ -19,7 +19,7 @@ class JwtService {
     return JwtService.instance;
   }
 
-  public createUser(user_id: string): Promise<string> {
+  public create(user_id: string): Promise<string> {
     return new Promise((resolve, reject) => {
       jwt.sign(
         { user_id },

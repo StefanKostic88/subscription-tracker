@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import { User, UserCreationAttributes } from "../../models";
-import { CustomError } from "../../helpers";
-import { JwtService, BcryptService } from "../../services";
+import { UserCreationAttributes } from "../../models";
+// import { CustomError } from "../../helpers";
+// import { JwtService, BcryptService } from "../../services";
 import UserService from "../../services/user/user.service";
 
-const bCrypt = BcryptService.getInstance();
-const jwtService = JwtService.getInstance();
+// const bCrypt = BcryptService.getInstance();
+// const jwtService = JwtService.getInstance();
 const userService = UserService.getInstance();
 
 export const signUp = async (
@@ -29,36 +29,31 @@ export const signUp = async (
     //   throw error;
     // }
 
-    await userService.checkIfUserEixsts(email);
+    const responseData = await (
+      await userService.checkIfUserEixsts(email)
+    ).createUser({ email, password, name }, session);
 
-    const hashedPassword = await bCrypt.encryptPassword(password);
+    // const hashedPassword = await bCrypt.encryptPassword(password);
 
-    const newUsers = await User.create(
-      [
-        {
-          name,
-          email,
-          password: hashedPassword,
-        },
-      ],
-      { session: session }
-    );
+    // const newUsers = await User.create(
+    //   [
+    //     {
+    //       name,
+    //       email,
+    //       password: hashedPassword,
+    //     },
+    //   ],
+    //   { session: session }
+    // );
 
-    const newUser = newUsers[0];
+    // const newUser = newUsers[0];
 
-    const token = await jwtService.createUser(newUser.id);
+    // const token = await jwtService.create(newUser.id);
 
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({
-      data: {
-        token,
-        user: newUser,
-      },
-      success: true,
-      message: "User created successfully",
-    });
+    res.status(200).json(responseData);
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
