@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import User, { UserCreationAttributes } from "../../models/user.model";
+import { User, UserCreationAttributes } from "../../models";
 import { CustomError } from "../../helpers";
-
 import { JwtService, BcryptService } from "../../services";
 
 const bCrypt = BcryptService.getInstance();
