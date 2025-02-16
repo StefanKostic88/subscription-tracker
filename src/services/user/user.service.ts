@@ -4,21 +4,19 @@ import { CustomError } from "../../helpers";
 import { UserCreationAttributes } from "../../models";
 import BcryptService from "../b-crypt/bCrypt.service";
 import JwtService from "../JWT/jwt.service";
-
-const dictionary = {
-  registerStatus: {},
-  userStatus: {},
-};
+import { EmailService, EmailStatus } from "../email/email.service";
 
 class UserService {
   private static instance: UserService;
   private userData: UserData;
   private bCrypt: BcryptService;
   private jwtService: JwtService;
+  private emailService: EmailService;
   private constructor() {
     this.userData = UserData.getInstance();
     this.bCrypt = BcryptService.getInstance();
     this.jwtService = JwtService.getInstance();
+    this.emailService = EmailService.getInstance();
   }
 
   public static getInstance(): UserService {
@@ -61,11 +59,11 @@ class UserService {
     data: UserCreationAttributes
   ): Promise<this> {
     this.checkIfRequestIsValid(data);
-    return this.checkEmailStatus(data.email, "register");
+    return this.checkEmailStatus(data.email, EmailStatus.USER_REGISTERED);
   }
 
   public async checkIfUserEixsts(email: string): Promise<this> {
-    return this.checkEmailStatus(email, "user");
+    return this.checkEmailStatus(email, EmailStatus.USER_NOT_FOUND);
   }
 
   private checkIfRequestIsValid(data: UserCreationAttributes) {
@@ -80,20 +78,30 @@ class UserService {
 
   private async checkEmailStatus(
     email: string,
-    checkType: "register" | "user"
+    checkType: EmailStatus
   ): Promise<this> {
     const user = await this.userData.getUserByEmail(email);
-    if (checkType === "register" && user) {
-      throw new CustomError(`User with email: ${user.email} exists`, 409);
+    const emailStatus = this.generateStatus(email);
+
+    if (EmailStatus.USER_REGISTERED && user) {
+      emailStatus[EmailStatus.USER_REGISTERED]();
     }
 
-    if (checkType === "user" && !user) {
-      throw new CustomError(
-        `User not found, User with email: ${email} doesn't exist`,
-        404
-      );
+    if (checkType === EmailStatus.USER_NOT_FOUND && !user) {
+      emailStatus[EmailStatus.USER_NOT_FOUND]();
     }
     return this;
+  }
+
+  private generateStatus(email: string): { [key in EmailStatus]: () => void } {
+    const emailStatus = {
+      [EmailStatus.USER_REGISTERED]: () =>
+        this.emailService.checkEmailStatus(email, EmailStatus.USER_REGISTERED),
+      [EmailStatus.USER_NOT_FOUND]: () =>
+        this.emailService.checkEmailStatus(email, EmailStatus.USER_NOT_FOUND),
+    };
+
+    return emailStatus;
   }
 }
 
