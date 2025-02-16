@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import { UserCreationAttributes } from "../../models";
+import { UserCreationAttributes, SignInUser, User } from "../../models";
 // import { CustomError } from "../../helpers";
 // import { JwtService, BcryptService } from "../../services";
 import UserService from "../../services/user/user.service";
+import { CustomError } from "../../helpers";
+import bcrypt from "bcrypt";
 
 // const bCrypt = BcryptService.getInstance();
 // const jwtService = JwtService.getInstance();
@@ -65,11 +67,38 @@ export const signUp = async (
 };
 
 export const signIn = async (
-  req: Request,
+  req: Request<object, object, SignInUser>,
   res: Response,
   next: NextFunction
 ) => {
-  next();
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new CustomError("User not found", 404);
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new CustomError("Password not valid", 401);
+    }
+
+    // const token =  generate token
+
+    res.status(200).json({
+      data: {
+        token: "",
+        user,
+      },
+      message: "User Signd in successfully",
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const signOut = async (

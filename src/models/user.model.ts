@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
 
-export interface UserCreationAttributes {
-  name: string;
+export interface SignInUser {
   email: string;
   password: string;
+}
+
+export interface UserCreationAttributes extends SignInUser {
+  name: string;
 }
 
 type UserSchema = UserCreationAttributes;
