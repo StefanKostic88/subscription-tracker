@@ -19,27 +19,28 @@ export const errorMiddleware = (
   try {
     let error = { ...err };
 
-    if (err.name === "CastError") {
-      const message = "Resource not found";
-      error = new CustomError(message, 404);
-    }
+    // if (err.name === "CastError") {
+    //   const message = "Resource not found";
+    //   error = new CustomError(message, 404);
+    // }
 
-    if (err.statusCode === 11000) {
-      const message = "Duplicate field value entered";
-      error = new CustomError(message, 400);
-    }
+    // if (err.statusCode === 11000) {
+    //   const message = "Duplicate field value entered";
+    //   error = new CustomError(message, 400);
+    // }
 
-    if (err.name === "ValidationError") {
-      const messsage = Object.values(err.errors).map(
-        (val) => (val as { message: string }).message
-      );
+    // if (err.name === "ValidationError") {
+    //   const messsage = Object.values(err.errors).map(
+    //     (val) => (val as { message: string }).message
+    //   );
 
-      error = new CustomError(messsage.join(", "), 400);
-    }
-
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, error: error.message });
+    //   error = new CustomError(messsage.join(", "), 400);
+    // }
+    // console.log(error);
+    // res
+    //   .status(error.statusCode || 500)
+    //   .json({ success: false, error: error.message });
+    res.status(error.statusCode || 500).json({ success: false, error: "ERR" });
   } catch (error) {
     next(error);
   }

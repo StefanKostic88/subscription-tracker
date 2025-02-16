@@ -5,6 +5,11 @@ import { UserCreationAttributes } from "../../models";
 import BcryptService from "../b-crypt/bCrypt.service";
 import JwtService from "../JWT/jwt.service";
 
+const dictionary = {
+  registerStatus: {},
+  userStatus: {},
+};
+
 class UserService {
   private static instance: UserService;
   private userData: UserData;
@@ -22,16 +27,6 @@ class UserService {
     }
 
     return UserService.instance;
-  }
-
-  public async checkIfUserEixsts(email: string): Promise<this> {
-    const user = await this.userData.getUserByEmail(email);
-
-    if (user) {
-      throw new CustomError(`User with email: ${user.email} exists`, 409);
-    }
-
-    return this;
   }
 
   public async createUser(
@@ -60,6 +55,53 @@ class UserService {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  public async checkIfRegisteredEmailExists(
+    data: UserCreationAttributes
+  ): Promise<this> {
+    // const user = await this.userData.getUserByEmail(email);
+
+    // if (user) {
+    //   throw new CustomError(`User with email: ${user.email} exists`, 409);
+    // }
+
+    // return this;
+
+    this.checkIfRequestIsValid(data);
+    return this.checkEmailStatus(data.email, "register");
+  }
+
+  public async checkIfUserEixsts(email: string): Promise<this> {
+    return this.checkEmailStatus(email, "user");
+  }
+
+  private checkIfRequestIsValid(data: UserCreationAttributes) {
+    const { email, name, password } = data;
+
+    if (!email || !name || !password) {
+      throw new CustomError("Invalid Request Data", 401);
+    }
+
+    return true;
+  }
+
+  private async checkEmailStatus(
+    email: string,
+    checkType: "register" | "user"
+  ): Promise<this> {
+    const user = await this.userData.getUserByEmail(email);
+    if (checkType === "register" && user) {
+      throw new CustomError(`User with email: ${user.email} exists`, 409);
+    }
+
+    if (checkType === "user" && !user) {
+      throw new CustomError(
+        `User not found, User with email: ${email} doesn't exist`,
+        404
+      );
+    }
+    return this;
   }
 }
 

@@ -19,8 +19,6 @@ export const signUp = async (
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  console.log(req.body);
-
   try {
     const { email, password, name } = req.body;
 
@@ -32,7 +30,7 @@ export const signUp = async (
     // }
 
     const responseData = await (
-      await userService.checkIfUserEixsts(email)
+      await userService.checkIfRegisteredEmailExists({ email, password, name })
     ).createUser({ email, password, name }, session);
 
     // const hashedPassword = await bCrypt.encryptPassword(password);
@@ -56,13 +54,14 @@ export const signUp = async (
     session.endSession();
 
     res.status(200).json(responseData);
-  } catch (error) {
+  } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
 
     // next(error);
-    next(new Error("ERRORRR"));
-    console.log(error);
+    // console.log(error);
+    // next(new Error("ERRORRR"));
+    next(new CustomError(error.message, error.statusCode));
   }
 };
 
