@@ -60,14 +60,6 @@ class UserService {
   public async checkIfRegisteredEmailExists(
     data: UserCreationAttributes
   ): Promise<this> {
-    // const user = await this.userData.getUserByEmail(email);
-
-    // if (user) {
-    //   throw new CustomError(`User with email: ${user.email} exists`, 409);
-    // }
-
-    // return this;
-
     this.checkIfRequestIsValid(data);
     return this.checkEmailStatus(data.email, "register");
   }

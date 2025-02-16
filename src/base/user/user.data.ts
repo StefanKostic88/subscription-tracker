@@ -21,9 +21,9 @@ class UserData extends SharedBase {
     session: mongoose.mongo.ClientSession
   ): Promise<UserDocument | undefined> {
     try {
-      const users = await User.create([User], { session });
-      const user = users[0];
-      return user;
+      const newUsers = await User.create([user], { session });
+      const newUser = newUsers[0];
+      return newUser;
     } catch (error) {
       console.error(error);
       throw this.generateError(error);

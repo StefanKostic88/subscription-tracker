@@ -3,67 +3,28 @@ import mongoose from "mongoose";
 import { UserCreationAttributes, SignInUser, User } from "../../models";
 // import { CustomError } from "../../helpers";
 // import { JwtService, BcryptService } from "../../services";
-import UserService from "../../services/user/user.service";
-import { CustomError } from "../../helpers";
+import { UserService } from "../../services";
+import { CustomError, catchAsyncError } from "../../helpers";
 import bcrypt from "bcrypt";
 
-// const bCrypt = BcryptService.getInstance();
-// const jwtService = JwtService.getInstance();
 const userService = UserService.getInstance();
 
-export const signUp = async (
-  req: Request<object, object, UserCreationAttributes>,
-  res: Response,
-  next: NextFunction
-) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
+export const signUp = catchAsyncError(
+  async (
+    req: Request<object, object, UserCreationAttributes>,
+    res: Response,
+    next: NextFunction,
+    session: mongoose.ClientSession
+  ) => {
     const { email, password, name } = req.body;
-
-    // const existingUser = await User.findOne({ email: email });
-
-    // if (existingUser) {
-    //   const error = new CustomError("User exists", 409);
-    //   throw error;
-    // }
 
     const responseData = await (
       await userService.checkIfRegisteredEmailExists({ email, password, name })
     ).createUser({ email, password, name }, session);
 
-    // const hashedPassword = await bCrypt.encryptPassword(password);
-
-    // const newUsers = await User.create(
-    //   [
-    //     {
-    //       name,
-    //       email,
-    //       password: hashedPassword,
-    //     },
-    //   ],
-    //   { session: session }
-    // );
-
-    // const newUser = newUsers[0];
-
-    // const token = await jwtService.create(newUser.id);
-
-    await session.commitTransaction();
-    session.endSession();
-
     res.status(200).json(responseData);
-  } catch (error: any) {
-    await session.abortTransaction();
-    session.endSession();
-
-    // next(error);
-    // console.log(error);
-    // next(new Error("ERRORRR"));
-    next(new CustomError(error.message, error.statusCode));
   }
-};
+);
 
 export const signIn = async (
   req: Request<object, object, SignInUser>,
@@ -107,3 +68,57 @@ export const signOut = async (
 ) => {
   next();
 };
+
+// export const signUp = async (
+//   req: Request<object, object, UserCreationAttributes>,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const { email, password, name } = req.body;
+
+//     // const existingUser = await User.findOne({ email: email });
+
+//     // if (existingUser) {
+//     //   const error = new CustomError("User exists", 409);
+//     //   throw error;
+//     // }
+
+//     const responseData = await (
+//       await userService.checkIfRegisteredEmailExists({ email, password, name })
+//     ).createUser({ email, password, name }, session);
+
+//     // const hashedPassword = await bCrypt.encryptPassword(password);
+
+//     // const newUsers = await User.create(
+//     //   [
+//     //     {
+//     //       name,
+//     //       email,
+//     //       password: hashedPassword,
+//     //     },
+//     //   ],
+//     //   { session: session }
+//     // );
+
+//     // const newUser = newUsers[0];
+
+//     // const token = await jwtService.create(newUser.id);
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     res.status(200).json(responseData);
+//   } catch (error: any) {
+//     await session.abortTransaction();
+//     session.endSession();
+
+//     // next(error);
+//     // console.log(error);
+//     // next(new Error("ERRORRR"));
+//     next(new CustomError(error.message, error.statusCode));
+//   }
+// };
