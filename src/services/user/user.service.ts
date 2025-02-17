@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import UserData from "../../base/user/user.data";
 import { CustomError } from "../../helpers";
 import { SignInUser, UserCreationAttributes, UserDocument } from "../../models";
-import BcryptService from "../b-crypt/bCrypt.service";
+// import BcryptService from "../b-crypt/bCrypt.service";
 import JwtService from "../JWT/jwt.service";
 import { EmailService, EmailStatus } from "../email/email.service";
 
@@ -14,13 +14,13 @@ enum AuthRequestMethod {
 class UserService {
   private static instance: UserService;
   private userData: UserData;
-  private bCryptService: BcryptService;
+  // private bCryptService: BcryptService;
   private jwtService: JwtService;
   private emailService: EmailService;
   private userDocument: UserDocument | null;
   private constructor() {
     this.userData = UserData.getInstance();
-    this.bCryptService = BcryptService.getInstance();
+    // this.bCryptService = BcryptService.getInstance();
     this.jwtService = JwtService.getInstance();
     this.emailService = EmailService.getInstance();
     this.userDocument = null;
@@ -40,14 +40,15 @@ class UserService {
   ) {
     try {
       // switch hash on create
-      const hashedPassword = await this.bCryptService.encryptPassword(
-        data.password
-      );
-      const hashedPasswordUser: UserCreationAttributes = {
-        ...data,
-        password: hashedPassword,
-      };
-      const user = await this.userData.createUser(hashedPasswordUser, session);
+      // const hashedPassword = await this.bCryptService.encryptPassword(
+      //   data.password
+      // );
+      // const hashedPasswordUser: UserCreationAttributes = {
+      //   ...data,
+      //   password: hashedPassword,
+      // };
+      // const user = await this.userData.createUser(hashedPasswordUser, session);
+      const user = await this.userData.createUser(data, session);
       const token = user && (await this.jwtService.create(user.id));
 
       const responseData = {
@@ -97,12 +98,13 @@ class UserService {
   }
 
   public async checkUserPasword(password: string) {
-    const isPasswordValid =
-      this.userDocument &&
-      (await this.bCryptService.comparePasswords(
-        password,
-        this.userDocument.password
-      ));
+    const isPasswordValid = await this.userDocument?.checkPassword(password);
+    // const isPasswordValid =
+    //   this.userDocument &&
+    //   (await this.bCryptService.comparePasswords(
+    //     password,
+    //     this.userDocument.password
+    //   ));
     if (!isPasswordValid) {
       throw new CustomError("Password not valid", 401);
     }

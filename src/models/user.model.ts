@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { bcryptService } from "../services";
 
 export interface SignInUser {
   email: string;
@@ -14,7 +15,8 @@ type UserSchema = UserCreationAttributes;
 // lastUpdate?: Date;
 
 interface UserMethods {
-  test: () => void;
+  encriptPassword: () => Promise<string>;
+  checkPassword: (candidatePass: string) => Promise<boolean>;
 }
 
 export interface UserDocument
@@ -60,5 +62,30 @@ const userSchema = new mongoose.Schema<UserSchema, UserModel, UserMethods>(
     timestamps: true,
   }
 );
+
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password") || this.isNew) {
+    try {
+      this.password = await bcryptService.encryptPassword(this.password);
+    } catch (error) {
+      return next(error as Error);
+    }
+  }
+
+  next();
+});
+
+userSchema.method("encriptPassword", async function () {
+  return await bcryptService.encryptPassword(this.password);
+});
+
+userSchema.method("checkPassword", async function (candidatePass: string) {
+  const isPasswordCorrect: boolean = await bcryptService.comparePasswords(
+    candidatePass,
+    this.password
+  );
+
+  return isPasswordCorrect;
+});
 
 export const User = mongoose.model<UserSchema, UserModel>("User", userSchema);
