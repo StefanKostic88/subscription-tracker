@@ -4,7 +4,11 @@ import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
 import { userRouter, authRouter, subscriptionRouter } from "./routes";
 import DataBaseConnection from "./database/mongodb";
-import { errorHandlerMiddleware, unsupportedRoutes } from "./middlewares";
+import {
+  errorHandlerMiddleware,
+  unsupportedRoutes,
+  loggerMiddleware,
+} from "./middlewares";
 
 abstract class CoreApp {
   protected _app: Express;
@@ -46,6 +50,7 @@ export class App extends CoreApp {
     router.use(cookieParser());
 
     this._app.use("/api/v1", router);
+    router.use("/", loggerMiddleware);
 
     router.use("/auth", authRouter);
     router.use("/users", userRouter);
@@ -55,8 +60,6 @@ export class App extends CoreApp {
     router.all("*", unsupportedRoutes);
     // Global Error Handler
     router.use(errorHandlerMiddleware);
-
-    // router.use(errorMiddleware);
   }
   public startServer(): void {
     this._server = this._app.listen(this._port, async () => {

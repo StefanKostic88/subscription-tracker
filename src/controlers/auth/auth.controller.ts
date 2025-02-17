@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import { UserCreationAttributes, SignInUser } from "../../models";
-import { UserService } from "../../services";
+import { userService } from "../../services";
 import { catchAsyncErrorWithCommit, catchAyncError } from "../../helpers";
-
-const userService = UserService.getInstance();
 
 export const signUp = catchAsyncErrorWithCommit(
   async (
@@ -19,7 +17,7 @@ export const signUp = catchAsyncErrorWithCommit(
       await userService.checkIfRegisteredEmailExists({ email, password, name })
     ).createUser({ email, password, name }, session);
 
-    res.status(200).json(responseData);
+    res.status(201).json(responseData);
   }
 );
 

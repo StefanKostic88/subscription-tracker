@@ -137,4 +137,6 @@ class UserService {
   }
 }
 
-export default UserService;
+const userService = UserService.getInstance();
+
+export default userService;
