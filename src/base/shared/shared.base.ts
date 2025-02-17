@@ -29,7 +29,9 @@ class SharedBase {
       (error as mongoose.Error.ValidationError).errors
     );
 
-    const message = errorArray.map((er) => er.message).join(", ");
+    const message =
+      "Invalid Request Data: " + errorArray.map((er) => er.message).join(", ");
+
     return new CustomError(message, 400);
   }
 
