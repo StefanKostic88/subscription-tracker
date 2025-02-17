@@ -2,18 +2,18 @@ import SharedBase from "../shared/shared.base";
 import { User, UserCreationAttributes, UserDocument } from "../../models";
 import mongoose from "mongoose";
 
-class UserData extends SharedBase {
-  private static instance: UserData;
+class AuthData extends SharedBase {
+  private static instance: AuthData;
   private constructor() {
     super();
   }
 
-  public static getInstance(): UserData {
-    if (!UserData.instance) {
-      UserData.instance = new UserData();
+  public static getInstance(): AuthData {
+    if (!AuthData.instance) {
+      AuthData.instance = new AuthData();
     }
 
-    return UserData.instance;
+    return AuthData.instance;
   }
 
   // Auth
@@ -39,29 +39,6 @@ class UserData extends SharedBase {
       throw this.generateError(error);
     }
   }
-
-  ////////////////////////
-
-  // User 
-  ///////////////////////
-
-  public async getAllUsers(): Promise<UserDocument[]> {
-    try {
-      const users = await User.find();
-      return users;
-    } catch (error) {
-      throw this.generateError(error);
-    }
-  }
-
-  public async getUserById(id: string) {
-    try {
-      const user = await User.findById(id);
-      return user;
-    } catch (error) {
-      throw this.generateError(error);
-    }
-  }
 }
 
-export default UserData;
+export default AuthData;
