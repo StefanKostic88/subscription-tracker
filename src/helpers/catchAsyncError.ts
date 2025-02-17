@@ -1,6 +1,19 @@
 import mongoose from "mongoose";
 
-const catchAsyncError = <Req, Res, N>(
+export const catchAyncError = <Req, Res, N>(
+  callback: (req: Req, Res: Res, next: N) => Promise<void>
+) => {
+  return (req: Req, res: Res, next: N) => {
+    callback(req, res, next).catch((err: Error) => {
+      if (err instanceof Error) {
+        console.log(err);
+        (next as (err: Error) => void)(err);
+      }
+    });
+  };
+};
+
+export const catchAsyncErrorWithCommit = <Req, Res, N>(
   callback: (
     req: Req,
     res: Res,
@@ -28,5 +41,3 @@ const catchAsyncError = <Req, Res, N>(
     }
   };
 };
-
-export default catchAsyncError;
