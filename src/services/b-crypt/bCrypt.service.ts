@@ -24,4 +24,4 @@ class BcryptService {
   }
 }
 
-export default BcryptService;
+export const bcryptService = BcryptService.getInstance();
