@@ -25,7 +25,6 @@ class UserData extends SharedBase {
       const newUser = newUsers[0];
       return newUser;
     } catch (error) {
-      console.error(error);
       throw this.generateError(error);
     }
   }

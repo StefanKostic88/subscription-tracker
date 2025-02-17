@@ -4,7 +4,7 @@ import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
 import { userRouter, authRouter, subscriptionRouter } from "./routes";
 import DataBaseConnection from "./database/mongodb";
-import { errorMiddleware } from "./middlewares/error.middleware";
+import { errorHandlerMiddleware, unsupportedRoutes } from "./middlewares";
 
 abstract class CoreApp {
   protected _app: Express;
@@ -51,7 +51,12 @@ export class App extends CoreApp {
     router.use("/users", userRouter);
     router.use("/subscriptions", subscriptionRouter);
 
-    router.use(errorMiddleware);
+    // Unsuported route error
+    router.all("*", unsupportedRoutes);
+    // Global Error Handler
+    router.use(errorHandlerMiddleware);
+
+    // router.use(errorMiddleware);
   }
   public startServer(): void {
     this._server = this._app.listen(this._port, async () => {

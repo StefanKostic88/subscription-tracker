@@ -7,20 +7,17 @@ import JwtService from "../JWT/jwt.service";
 import { EmailService, EmailStatus } from "../email/email.service";
 
 enum AuthRequestMethod {
-  SIGN_UP = "sign up",
   SIGN_IN = "sign in",
 }
 
 class UserService {
   private static instance: UserService;
   private userData: UserData;
-  // private bCryptService: BcryptService;
   private jwtService: JwtService;
   private emailService: EmailService;
   private userDocument: UserDocument | null;
   private constructor() {
     this.userData = UserData.getInstance();
-    // this.bCryptService = BcryptService.getInstance();
     this.jwtService = JwtService.getInstance();
     this.emailService = EmailService.getInstance();
     this.userDocument = null;
@@ -38,32 +35,19 @@ class UserService {
     data: UserCreationAttributes,
     session: mongoose.mongo.ClientSession
   ) {
-    try {
-      // switch hash on create
-      // const hashedPassword = await this.bCryptService.encryptPassword(
-      //   data.password
-      // );
-      // const hashedPasswordUser: UserCreationAttributes = {
-      //   ...data,
-      //   password: hashedPassword,
-      // };
-      // const user = await this.userData.createUser(hashedPasswordUser, session);
-      const user = await this.userData.createUser(data, session);
-      const token = user && (await this.jwtService.create(user.id));
+    const user = await this.userData.createUser(data, session);
+    const token = user && (await this.jwtService.create(user.id));
 
-      const responseData = {
-        data: {
-          token,
-          user,
-        },
-        success: true,
-        message: "User created successfully",
-      };
+    const responseData = {
+      data: {
+        token,
+        user,
+      },
+      success: true,
+      message: "User created successfully",
+    };
 
-      return responseData;
-    } catch (error) {
-      console.log(error);
-    }
+    return responseData;
   }
 
   public async getUser() {
@@ -83,28 +67,16 @@ class UserService {
   public async checkIfRegisteredEmailExists(
     data: UserCreationAttributes
   ): Promise<this> {
-    this.checkIfRequestIsValid(data, AuthRequestMethod.SIGN_UP);
     return this.checkEmailStatus(data.email, EmailStatus.USER_REGISTERED);
   }
 
   public async checkIfUserEixsts(data: SignInUser): Promise<this> {
-    // this.checkIfRequestIsValid(
-    //   { email, name: "", password: "" },
-    //   AuthRequestMethod.SIGN_IN
-    // );
-
-    this.checkIfRequestIsValidTest(data, AuthRequestMethod.SIGN_IN);
+    this.checkIfRequestIsValid(data, AuthRequestMethod.SIGN_IN);
     return this.checkEmailStatus(data.email, EmailStatus.USER_NOT_FOUND);
   }
 
   public async checkUserPasword(password: string) {
     const isPasswordValid = await this.userDocument?.checkPassword(password);
-    // const isPasswordValid =
-    //   this.userDocument &&
-    //   (await this.bCryptService.comparePasswords(
-    //     password,
-    //     this.userDocument.password
-    //   ));
     if (!isPasswordValid) {
       throw new CustomError("Password not valid", 401);
     }
@@ -113,38 +85,9 @@ class UserService {
   }
 
   private checkIfRequestIsValid(
-    data: UserCreationAttributes,
+    data: SignInUser,
     requestType: AuthRequestMethod
-  ) {
-    const { email, name, password } = data;
-
-    if (
-      requestType === AuthRequestMethod.SIGN_UP &&
-      !email &&
-      !name &&
-      !password
-    ) {
-      throw new CustomError(
-        "Invalid Request Data: Email, Name and Password are required",
-        401
-      );
-    }
-
-    // if (requestType === AuthRequestMethod.SIGN_IN && !password && !email) {
-    //   throw new CustomError(
-    //     "Invalid Request Data: Password and Email are required",
-    //     401
-    //   );
-    // }
-
-    // if (!email || !name || !password) {
-    //   throw new CustomError("Invalid Request Data", 401);
-    // }
-
-    return true;
-  }
-
-  checkIfRequestIsValidTest(data: SignInUser, requestType: AuthRequestMethod) {
+  ): boolean {
     const { password, email } = data;
 
     if (requestType === AuthRequestMethod.SIGN_IN && (!password || !email)) {
