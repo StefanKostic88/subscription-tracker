@@ -37,6 +37,15 @@ class UserData extends SharedBase {
       throw this.generateError(error);
     }
   }
+
+  public async getAllUsers(): Promise<UserDocument[]> {
+    try {
+      const users = await User.find();
+      return users;
+    } catch (error) {
+      throw this.generateError(error);
+    }
+  }
 }
 
 export default UserData;

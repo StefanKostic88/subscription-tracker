@@ -21,6 +21,11 @@ interface UserResponse {
   success: boolean;
 }
 
+interface AllUsersResponse {
+  data: UserDocument[];
+  success: boolean;
+}
+
 class UserService {
   private static instance: UserService;
   private userData: UserData;
@@ -63,6 +68,12 @@ class UserService {
       { user, token },
       UserReponseMessage.USER_SIGNED_IN
     );
+  }
+
+  public async getAllUsers() {
+    const users = await this.userData.getAllUsers();
+
+    return this.generateUserResponse(users);
   }
 
   public async checkIfRegisteredEmailExists(
@@ -121,18 +132,25 @@ class UserService {
   }
 
   private generateUserResponse(
-    data: {
-      token: string | null | undefined;
-      user: UserDocument | null | undefined;
-    },
-    checkType: UserReponseMessage
-  ): UserResponse | undefined {
-    if (!checkType) return;
+    data:
+      | {
+          token: string | null | undefined;
+          user: UserDocument | null | undefined;
+        }
+      | UserDocument[],
+    checkType?: UserReponseMessage
+  ): UserResponse | AllUsersResponse | undefined {
+    if (!checkType) {
+      return {
+        success: true,
+        data,
+      } as AllUsersResponse;
+    }
 
     return {
-      data: { ...data },
       success: true,
       message: checkType,
+      data: { ...data },
     } as UserResponse;
   }
 }
