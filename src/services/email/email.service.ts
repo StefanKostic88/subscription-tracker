@@ -16,13 +16,26 @@ export class EmailService {
     return EmailService.instance;
   }
 
-  public checkEmailStatus(email: string, checkType: EmailStatus) {
+  public generateEmailStatus(email: string): {
+    [key in EmailStatus]: () => void;
+  } {
+    const emailStatus = {
+      [EmailStatus.USER_REGISTERED]: () =>
+        this.checkEmailStatus(email, EmailStatus.USER_REGISTERED),
+      [EmailStatus.USER_NOT_FOUND]: () =>
+        this.checkEmailStatus(email, EmailStatus.USER_NOT_FOUND),
+    };
+
+    return emailStatus;
+  }
+
+  private checkEmailStatus(email: string, checkType: EmailStatus) {
     let errorMessage: string;
     let statusCode: number;
 
     switch (checkType) {
       case EmailStatus.USER_REGISTERED:
-        errorMessage = `User with email: ${email} exists`;
+        errorMessage = `User with email: ${email} exists, please use other email`;
         statusCode = 409;
         break;
       case EmailStatus.USER_NOT_FOUND:

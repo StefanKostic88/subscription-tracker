@@ -76,7 +76,7 @@ class UserService {
     return this.checkEmailStatus(data.email, EmailStatus.USER_NOT_FOUND);
   }
 
-  public async checkUserPasword(password: string) {
+  public async checkUserPasword(password: string): Promise<this> {
     const isPasswordValid = await this.userDocument?.checkPassword(password);
     if (!isPasswordValid) {
       throw new CustomError("Password not valid", 401);
@@ -105,28 +105,19 @@ class UserService {
     checkType: EmailStatus
   ): Promise<this> {
     const user = await this.userData.getUserByEmail(email);
-    const emailStatus = this.generateStatus(email);
+    const emailStatus = this.emailService.generateEmailStatus(email);
 
-    if (checkType === EmailStatus.USER_REGISTERED && user) {
-      emailStatus[EmailStatus.USER_REGISTERED]();
-    }
+    switch (checkType) {
+      case EmailStatus.USER_REGISTERED:
+        if (user) emailStatus[EmailStatus.USER_REGISTERED]();
+        break;
 
-    if (checkType === EmailStatus.USER_NOT_FOUND && !user) {
-      emailStatus[EmailStatus.USER_NOT_FOUND]();
+      case EmailStatus.USER_NOT_FOUND:
+        if (!user) emailStatus[EmailStatus.USER_NOT_FOUND]();
+        break;
     }
     this.userDocument = user;
     return this;
-  }
-
-  private generateStatus(email: string): { [key in EmailStatus]: () => void } {
-    const emailStatus = {
-      [EmailStatus.USER_REGISTERED]: () =>
-        this.emailService.checkEmailStatus(email, EmailStatus.USER_REGISTERED),
-      [EmailStatus.USER_NOT_FOUND]: () =>
-        this.emailService.checkEmailStatus(email, EmailStatus.USER_NOT_FOUND),
-    };
-
-    return emailStatus;
   }
 
   private generateUserResponse(
@@ -134,22 +125,15 @@ class UserService {
       token: string | null | undefined;
       user: UserDocument | null | undefined;
     },
-    responseType: UserReponseMessage
+    checkType: UserReponseMessage
   ): UserResponse | undefined {
-    const userResponse = { data: { ...data }, success: true };
+    if (!checkType) return;
 
-    if (responseType === UserReponseMessage.USER_CREATED) {
-      return {
-        ...userResponse,
-        message: UserReponseMessage.USER_CREATED,
-      } as UserResponse;
-    }
-    if (responseType === UserReponseMessage.USER_SIGNED_IN) {
-      return {
-        ...userResponse,
-        message: UserReponseMessage.USER_SIGNED_IN,
-      } as UserResponse;
-    }
+    return {
+      data: { ...data },
+      success: true,
+      message: checkType,
+    } as UserResponse;
   }
 }
 
