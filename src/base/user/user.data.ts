@@ -34,7 +34,6 @@ class UserData extends SharedBase {
       const user = await User.findOne({ email });
       return user;
     } catch (error) {
-      console.error(error);
       throw this.generateError(error);
     }
   }

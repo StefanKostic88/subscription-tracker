@@ -2,12 +2,23 @@ import mongoose from "mongoose";
 import UserData from "../../base/user/user.data";
 import { CustomError } from "../../helpers";
 import { SignInUser, UserCreationAttributes, UserDocument } from "../../models";
-// import BcryptService from "../b-crypt/bCrypt.service";
+
 import JwtService from "../JWT/jwt.service";
 import { EmailService, EmailStatus } from "../email/email.service";
 
 enum AuthRequestMethod {
   SIGN_IN = "sign in",
+}
+
+enum UserReponseMessage {
+  USER_CREATED = "User created successfully",
+  USER_SIGNED_IN = "User Signed in successfully",
+}
+
+interface UserResponse {
+  data: { token: string | null; user: UserDocument | null };
+  message: UserReponseMessage;
+  success: boolean;
 }
 
 class UserService {
@@ -38,30 +49,20 @@ class UserService {
     const user = await this.userData.createUser(data, session);
     const token = user && (await this.jwtService.create(user.id));
 
-    const responseData = {
-      data: {
-        token,
-        user,
-      },
-      success: true,
-      message: "User created successfully",
-    };
-
-    return responseData;
+    return this.generateUserResponse(
+      { user, token },
+      UserReponseMessage.USER_CREATED
+    );
   }
 
   public async getUser() {
     const user = this.userDocument;
     const token = user && (await this.jwtService.create(user.id));
 
-    return {
-      data: {
-        token,
-        user,
-      },
-      message: "User Signed in successfully",
-      success: true,
-    };
+    return this.generateUserResponse(
+      { user, token },
+      UserReponseMessage.USER_SIGNED_IN
+    );
   }
 
   public async checkIfRegisteredEmailExists(
@@ -126,6 +127,29 @@ class UserService {
     };
 
     return emailStatus;
+  }
+
+  private generateUserResponse(
+    data: {
+      token: string | null | undefined;
+      user: UserDocument | null | undefined;
+    },
+    responseType: UserReponseMessage
+  ): UserResponse | undefined {
+    const userResponse = { data: { ...data }, success: true };
+
+    if (responseType === UserReponseMessage.USER_CREATED) {
+      return {
+        ...userResponse,
+        message: UserReponseMessage.USER_CREATED,
+      } as UserResponse;
+    }
+    if (responseType === UserReponseMessage.USER_SIGNED_IN) {
+      return {
+        ...userResponse,
+        message: UserReponseMessage.USER_SIGNED_IN,
+      } as UserResponse;
+    }
   }
 }
 
