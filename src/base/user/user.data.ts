@@ -46,6 +46,15 @@ class UserData extends SharedBase {
       throw this.generateError(error);
     }
   }
+
+  public async getUserById(id: string) {
+    try {
+      const user = await User.findById(id);
+      return user;
+    } catch (error) {
+      throw this.generateError(error);
+    }
+  }
 }
 
 export default UserData;

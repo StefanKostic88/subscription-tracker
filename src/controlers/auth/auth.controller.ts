@@ -29,7 +29,7 @@ export const signIn = catchAyncError(
       await (
         await userService.checkIfUserEixsts({ email, password })
       ).checkUserPasword(password)
-    ).getUser();
+    ).getLoggedInUser();
 
     res.status(200).json(responseData);
   }

@@ -60,7 +60,7 @@ class UserService {
     );
   }
 
-  public async getUser() {
+  public async getLoggedInUser() {
     const user = this.userDocument;
     const token = user && (await this.jwtService.create(user.id));
 
@@ -69,6 +69,9 @@ class UserService {
       UserReponseMessage.USER_SIGNED_IN
     );
   }
+
+
+  public  async getUserById() {}
 
   public async getAllUsers() {
     const users = await this.userData.getAllUsers();
