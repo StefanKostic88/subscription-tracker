@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
 
-interface UserCreationAttributes {
-  name: string;
+export interface SignInUser {
   email: string;
   password: string;
+}
+
+export interface UserCreationAttributes extends SignInUser {
+  name: string;
 }
 
 type UserSchema = UserCreationAttributes;
@@ -14,7 +17,7 @@ interface UserMethods {
   test: () => void;
 }
 
-interface UserDocument
+export interface UserDocument
   extends mongoose.Document<UserSchema, object, UserSchema>,
     UserSchema,
     UserMethods {}
@@ -41,7 +44,7 @@ const userSchema = new mongoose.Schema<UserSchema, UserModel, UserMethods>(
     },
     email: {
       type: String,
-      required: [true, "User Name is required"],
+      required: [true, "Email is required"],
       trim: true,
       unique: true,
       lowercase: true,
@@ -58,6 +61,4 @@ const userSchema = new mongoose.Schema<UserSchema, UserModel, UserMethods>(
   }
 );
 
-const User = mongoose.model<UserSchema, UserModel>("User", userSchema);
-
-export default User;
+export const User = mongoose.model<UserSchema, UserModel>("User", userSchema);
