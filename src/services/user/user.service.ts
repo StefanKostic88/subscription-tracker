@@ -19,7 +19,19 @@ class UserService {
   public async getUserById() {}
 
   public async getAllUsers() {
-    return await this.userData.getAllUsers();
+    const allUsers = await this.userData.getAllUsers();
+    return this.generateResponse(
+      { usersLength: allUsers ? allUsers.length : 0, allUsers },
+      "All Users"
+    );
+  }
+
+  private generateResponse<T>(data: T, responseMsg: string) {
+    return {
+      success: true,
+      message: responseMsg,
+      data,
+    };
   }
 }
 
