@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { userService } from "../../services";
-import { User } from "../../models";
 import { catchAyncError } from "../../helpers";
 
 export const getAllUsers = catchAyncError(
@@ -16,6 +15,10 @@ export const getUser = async (
 ) => {
   try {
     const response = await userService.getUserById(req.params.id);
+
+    // Try to use this, functio which should use this first, and if fail call the getUserById method
+    const userTest = req.currentUser;
+    console.log(userTest);
 
     res.status(200).json(response);
   } catch (error) {

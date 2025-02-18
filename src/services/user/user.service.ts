@@ -3,7 +3,6 @@ import UserData from "../../base/user/user.data";
 import { UserDocument } from "../../models";
 
 interface allUsersResponse {
-  usersLength: number;
   allUsers: UserDocument[];
 }
 
@@ -13,7 +12,8 @@ interface singleUserResponse {
 
 interface ServiceResponse<T> {
   data: T;
-  message: string;
+  message?: string;
+  length?: number;
   success: boolean;
 }
 
@@ -39,21 +39,23 @@ class UserService {
   public async getAllUsers(): Promise<AllUsersServiceReponse> {
     const allUsers = await this.userData.getAllUsers();
     return this.generateResponse(
-      { usersLength: allUsers ? allUsers.length : 0, allUsers },
-      "All Users"
+      { allUsers },
+      undefined,
+      allUsers ? allUsers.length : 0
     );
   }
 
   public async getUserById(id: string): Promise<SingleUserServiceReponse> {
     const user = await this.userData.getUserById(id);
 
-    return this.generateResponse({ user }, `User with id: ${id} found`);
+    return this.generateResponse({ user });
   }
 
-  private generateResponse<T>(data: T, responseMsg: string) {
+  private generateResponse<T>(data: T, responseMsg?: string, length?: number) {
     return {
       success: true,
-      message: responseMsg,
+      ...(responseMsg && { message: responseMsg }),
+      ...(length && { length: length }),
       data,
     };
   }

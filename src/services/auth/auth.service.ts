@@ -89,6 +89,13 @@ class AuthService {
     );
   }
 
+  public async verifyToken(token: string) {
+    const { user_id } = await this.jwtService.verify(token);
+    console.log(user_id);
+
+    return user_id;
+  }
+
   // PRIVATE METHODS
   // Export this to common class
   private generateUserResponse<T>(
