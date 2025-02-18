@@ -1,13 +1,9 @@
-import { Router, Request, Response } from "express";
-import { getAllUsers } from "../controlers";
+import { Router } from "express";
+import { getAllUsers, getUser } from "../controlers";
 
 const userRouter = Router();
 
 userRouter.get("/", getAllUsers);
-userRouter.get("/:id", (req: Request, res: Response) => {
-  res.send({
-    test: "test",
-  });
-});
+userRouter.get("/:id", getUser);
 
 export default userRouter;

@@ -1,5 +1,6 @@
 import SharedBase from "../shared/shared.base";
 import { User, UserDocument } from "../../models";
+import { CustomError } from "../../helpers";
 
 class UserData extends SharedBase {
   private static instance: UserData;
@@ -29,7 +30,13 @@ class UserData extends SharedBase {
 
   public async getUserById(id: string) {
     try {
-      const user = await User.findById(id);
+      const user = await User.findById(id).select("-password");
+      if (!user) {
+        throw new CustomError(
+          `User not found, user with id: ${id} does not exist`,
+          404
+        );
+      }
       return user;
     } catch (error) {
       throw this.generateError(error);

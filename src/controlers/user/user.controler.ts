@@ -15,15 +15,9 @@ export const getUser = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const response = await userService.getUserById(req.params.id);
 
-    if (!user) {
-      throw new Error("User not found"); // 404
-    }
-
-    res.status(200).json({
-      data: user,
-    });
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

@@ -11,6 +11,10 @@ class SharedBase {
       return this.handleCastError(error);
     }
 
+    if (error instanceof Error && error.name === "RangeError") {
+      console.log("RangeError");
+    }
+
     if (error instanceof mongoose.Error) {
       if (error.name === "ValidationError") {
         return this.handleValidationError(error);
