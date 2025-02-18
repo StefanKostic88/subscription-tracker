@@ -32,6 +32,7 @@ export const userAuthenticated = async (
   } catch (error) {
     res
       .status(401)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .json({ message: "Unauthorized", error: (error as any).message });
   }
 };
