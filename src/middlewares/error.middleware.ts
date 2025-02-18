@@ -21,6 +21,7 @@ export const errorHandlerMiddleware = (
   infoLogger.error(`message: ${err.message}, status code: ${err.statusCode}`);
   res.status(err.statusCode).json({
     data: null,
+    success: false,
     error: {
       message: err.message,
     },
