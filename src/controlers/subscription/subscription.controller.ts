@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 import {
   SubscriptionCreationAttributes,
@@ -24,3 +24,26 @@ export const createSubscription = catchAyncError(
     res.status(201).json(response);
   }
 );
+
+export const getUserSubscriptions = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.params.id;
+
+  try {
+    if (req.currentUser?.id !== userId) {
+      const errpr = new Error("You are not the owner of this account");
+      // errpr.status = 401;
+
+      throw errpr;
+    }
+
+    // const subs = await SUb.find({ user: req.params.id });
+
+    res.send("data");
+  } catch (error) {
+    next(error);
+  }
+};
