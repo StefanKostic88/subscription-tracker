@@ -24,7 +24,7 @@ enum Category {
   OTHER = "other",
 }
 
-enum Status {
+export enum Status {
   ACTIVE = "active",
   CANCELLED = "cancelled",
   EXPIRED = "expired",
@@ -34,18 +34,24 @@ export interface SubscriptionCreationAttributes {
   name: string;
   price: number;
   frequency: Frequency;
-  currency: Currency;
   category: Category;
   paymentMethod: string;
-  status: Status;
   startDate: Date;
-  renewalDate: Date;
 
   user: {
     type: typeof mongoose.Schema.Types.ObjectId;
     ref: string;
   };
+
+  currency?: Currency;
+  status?: Status;
+  renewalDate?: Date;
 }
+
+export type SubscriptionCreationWithoutUser = Omit<
+  SubscriptionCreationAttributes,
+  "user"
+>;
 
 type SubscriptionShema = SubscriptionCreationAttributes;
 
@@ -150,16 +156,8 @@ subscriptionSchema.pre("save", function (next) {
     };
     this.renewalDate = new Date(this.startDate);
 
-    if (Object.values(Frequency).includes(this.frequency as Frequency)) {
-      const period = renewalPeriods[this.frequency as Frequency];
-      this.renewalDate.setDate(this.renewalDate.getDate() + period);
-    } else {
-      console.error("Invalid frequency");
-    }
-
-    // this.renewalDate.setDate(
-    //   this.renewalDate.getDate() + renewalPeriods[this.frequency as Frequency]
-    // );
+    const period = renewalPeriods[this.frequency as Frequency];
+    this.renewalDate.setDate(this.renewalDate.getDate() + period);
   }
 
   if (this.renewalDate < new Date()) {

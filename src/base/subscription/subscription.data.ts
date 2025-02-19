@@ -32,7 +32,7 @@ class SubscriptionData extends SharedBase implements SubscriptionDataInterface {
       const subscription = await Subscription.create(data);
       return subscription;
     } catch (error) {
-      this.generateError(error);
+      throw this.generateError(error);
     }
   }
 }
