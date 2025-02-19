@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import Subscription from "../../models/subscription.model";
 import { SubscriptionCreationAttributes } from "../../models/subscription.model";
 
-export const createSubscription = (
+export const createSubscription = async (
   req: Request<object, object, SubscriptionCreationAttributes>,
   res: Response,
   next: NextFunction
@@ -12,8 +12,25 @@ export const createSubscription = (
 
     const data = req.body;
     console.log(data);
-    const {name, category,currency,frequency} = data;
-    // const subscription = await Subscription.create(req.body, user: req.user_id);
+    const {
+      name,
+      category,
+      currency,
+      frequency,
+      price,
+      paymentMethod,
+      startDate,
+    } = data;
+    const subscription = await Subscription.create({
+      name,
+      category,
+      currency,
+      frequency,
+      price,
+      paymentMethod,
+      startDate,
+    });
+    console.log(subscription);
 
     res.send("CAO");
   } catch (error) {
