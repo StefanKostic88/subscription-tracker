@@ -30,10 +30,10 @@ enum Status {
   EXPIRED = "expired",
 }
 
-interface SubscriptionCreationAttributes {
+export interface SubscriptionCreationAttributes {
   name: string;
   price: number;
-  frequency: string;
+  frequency: Frequency;
   currency: Currency;
   category: Category;
   paymentMethod: string;
