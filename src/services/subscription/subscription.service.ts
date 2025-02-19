@@ -1,4 +1,5 @@
 import { SubscriptionData } from "../../base";
+import { CustomError } from "../../helpers";
 import {
   SubscriptionCreationAttributes,
   SubscriptionDocument,
@@ -22,7 +23,7 @@ interface SubscriptionResponseData {
 type SubscriptionResponse = ServiceResponse<SubscriptionResponseData>;
 
 interface SubscriptionServiceInterface {
-  createUser(
+  createSubscription(
     data: SubscriptionCreationAttributes
   ): Promise<SubscriptionResponse>;
 }
@@ -41,16 +42,37 @@ class SubscriptionService implements SubscriptionServiceInterface {
 
     return SubscriptionService.instance;
   }
-  public async createUser(
+  public async createSubscription(
     data: SubscriptionCreationAttributes
   ): Promise<SubscriptionResponse> {
-    const subscription = await this.subscriptionData.createUser(data);
+    const subscription = await this.subscriptionData.createSubscription(data);
 
     const response = this.generateResponse(
       { subscription },
       UserReponseMessage.SUB_CREATED
     );
     return response;
+  }
+
+  public async geteSubscriptionByUserName(userId: string) {
+    const subscriptions =
+      await this.subscriptionData.geteSubscriptionByUserName(userId);
+
+    return this.generateResponse(
+      { subscriptions },
+      undefined,
+      subscriptions ? subscriptions.length : 0
+    );
+  }
+
+  public checkIfUserIsValid(data: { paramsId: string; userId: string }) {
+    const { paramsId, userId } = data;
+
+    if (userId !== paramsId) {
+      throw new CustomError("You are not the owner of this account", 401);
+    }
+
+    return this;
   }
 
   private generateResponse<T>(data: T, responseMsg?: string, length?: number) {

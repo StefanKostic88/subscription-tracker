@@ -6,9 +6,11 @@ import {
 } from "../../models";
 
 interface SubscriptionDataInterface {
-  createUser(
+  createSubscription(
     data: SubscriptionCreationAttributes
   ): Promise<SubscriptionDocument | undefined>;
+
+  geteSubscriptionByUserName(userId: string): Promise<SubscriptionDocument[]>;
 }
 
 class SubscriptionData extends SharedBase implements SubscriptionDataInterface {
@@ -25,11 +27,21 @@ class SubscriptionData extends SharedBase implements SubscriptionDataInterface {
     return SubscriptionData.instance;
   }
 
-  public async createUser(
+  public async createSubscription(
     data: SubscriptionCreationAttributes
   ): Promise<SubscriptionDocument | undefined> {
     try {
       const subscription = await Subscription.create(data);
+      return subscription;
+    } catch (error) {
+      throw this.generateError(error);
+    }
+  }
+  public async geteSubscriptionByUserName(
+    userId: string
+  ): Promise<SubscriptionDocument[]> {
+    try {
+      const subscription = await Subscription.find({ user: userId });
       return subscription;
     } catch (error) {
       throw this.generateError(error);

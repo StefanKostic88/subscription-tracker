@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 import {
   SubscriptionCreationAttributes,
@@ -19,31 +19,26 @@ export const createSubscription = catchAyncError(
       user: req.currentUser?.id,
     };
 
-    const response = await subscriptionService.createUser(data);
+    const response = await subscriptionService.createSubscription(data);
 
     res.status(201).json(response);
   }
 );
 
-export const getUserSubscriptions = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const userId = req.params.id;
+export const getUserSubscriptions = catchAyncError(
+  async (req: Request, res: Response) => {
+    const paramsId = req.params.id;
+    const userId = req.currentUser?.id;
 
-  try {
-    if (req.currentUser?.id !== userId) {
-      const errpr = new Error("You are not the owner of this account");
-      // errpr.status = 401;
+    const data = {
+      paramsId,
+      userId: userId as string,
+    };
 
-      throw errpr;
-    }
+    const response = await subscriptionService
+      .checkIfUserIsValid(data)
+      .geteSubscriptionByUserName(userId);
 
-    // const subs = await SUb.find({ user: req.params.id });
-
-    res.send("data");
-  } catch (error) {
-    next(error);
+    res.status(200).json(response);
   }
-};
+);
