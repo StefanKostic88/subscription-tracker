@@ -1,11 +1,11 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import { createSubscription, getUserSubscriptions } from "../controlers";
+import { userAuthenticated } from "../middlewares";
 
 const subscriptionRouter = Router();
 
-subscriptionRouter.get("/", (req: Request, res: Response) => {
-  res.send({
-    test: "test",
-  });
-});
+subscriptionRouter.post("/", userAuthenticated, createSubscription);
+
+subscriptionRouter.get("/user/:id", userAuthenticated, getUserSubscriptions);
 
 export default subscriptionRouter;
