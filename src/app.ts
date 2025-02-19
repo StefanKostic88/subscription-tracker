@@ -8,6 +8,7 @@ import {
   errorHandlerMiddleware,
   unsupportedRoutes,
   loggerMiddleware,
+  arcjetMiddleware,
 } from "./middlewares";
 
 abstract class CoreApp {
@@ -48,6 +49,7 @@ export class App extends CoreApp {
     router.use(json());
     router.use(urlencoded({ extended: false }));
     router.use(cookieParser());
+    router.use(arcjetMiddleware);
 
     this._app.use("/api/v1", router);
     router.use("/", loggerMiddleware);
