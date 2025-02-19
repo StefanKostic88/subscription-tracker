@@ -6,7 +6,6 @@ export const catchAyncError = <Req, Res, N>(
   return (req: Req, res: Res, next: N) => {
     callback(req, res, next).catch((err: Error) => {
       if (err instanceof Error) {
-        console.log(err);
         (next as (err: Error) => void)(err);
       }
     });
@@ -33,7 +32,6 @@ export const catchAsyncErrorWithCommit = <Req, Res, N>(
       await session.abortTransaction();
 
       if (err instanceof Error) {
-        console.error("Error during transaction:", err);
         (next as (err: Error) => void)(err);
       }
     } finally {

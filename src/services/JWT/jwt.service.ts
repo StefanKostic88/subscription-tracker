@@ -37,7 +37,19 @@ class JwtService {
     });
   }
 
-  public verify() {}
+  public verify(token: string): Promise<{ user_id: string }> {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, this.secret, function (err, decoded) {
+        if (err) {
+          return reject(
+            new CustomError(`Error while decoding token: ${err}`, 401)
+          );
+        }
+
+        resolve(decoded as { user_id: string });
+      });
+    });
+  }
 }
 
 export default JwtService;

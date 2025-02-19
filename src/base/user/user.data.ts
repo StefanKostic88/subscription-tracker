@@ -1,6 +1,6 @@
 import SharedBase from "../shared/shared.base";
-import { User, UserCreationAttributes, UserDocument } from "../../models";
-import mongoose from "mongoose";
+import { User, UserDocument } from "../../models";
+import { CustomError } from "../../helpers";
 
 class UserData extends SharedBase {
   private static instance: UserData;
@@ -16,22 +16,27 @@ class UserData extends SharedBase {
     return UserData.instance;
   }
 
-  public async createUser(
-    user: UserCreationAttributes,
-    session: mongoose.mongo.ClientSession
-  ): Promise<UserDocument | undefined> {
+  // User
+  ///////////////////////
+
+  public async getAllUsers(): Promise<UserDocument[]> {
     try {
-      const newUsers = await User.create([user], { session });
-      const newUser = newUsers[0];
-      return newUser;
+      const users = await User.find();
+      return users;
     } catch (error) {
       throw this.generateError(error);
     }
   }
 
-  public async getUserByEmail(email: string): Promise<UserDocument | null> {
+  public async getUserById(id: string) {
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findById(id).select("-password");
+      if (!user) {
+        throw new CustomError(
+          `User not found, user with id: ${id} does not exist`,
+          404
+        );
+      }
       return user;
     } catch (error) {
       throw this.generateError(error);

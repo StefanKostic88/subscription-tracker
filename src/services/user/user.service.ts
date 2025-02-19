@@ -1,37 +1,31 @@
-import mongoose from "mongoose";
 import UserData from "../../base/user/user.data";
-import { CustomError } from "../../helpers";
-import { SignInUser, UserCreationAttributes, UserDocument } from "../../models";
 
-import JwtService from "../JWT/jwt.service";
-import { EmailService, EmailStatus } from "../email/email.service";
+import { UserDocument } from "../../models";
 
-enum AuthRequestMethod {
-  SIGN_IN = "sign in",
+interface allUsersResponse {
+  allUsers: UserDocument[];
 }
 
-enum UserReponseMessage {
-  USER_CREATED = "User created successfully",
-  USER_SIGNED_IN = "User Signed in successfully",
+interface singleUserResponse {
+  user: UserDocument;
 }
 
-interface UserResponse {
-  data: { token: string | null; user: UserDocument | null };
-  message: UserReponseMessage;
+interface ServiceResponse<T> {
+  data: T;
+  message?: string;
+  length?: number;
   success: boolean;
 }
+
+type AllUsersServiceReponse = ServiceResponse<allUsersResponse>;
+type SingleUserServiceReponse = ServiceResponse<singleUserResponse>;
 
 class UserService {
   private static instance: UserService;
   private userData: UserData;
-  private jwtService: JwtService;
-  private emailService: EmailService;
-  private userDocument: UserDocument | null;
+
   private constructor() {
     this.userData = UserData.getInstance();
-    this.jwtService = JwtService.getInstance();
-    this.emailService = EmailService.getInstance();
-    this.userDocument = null;
   }
 
   public static getInstance(): UserService {
@@ -42,99 +36,31 @@ class UserService {
     return UserService.instance;
   }
 
-  public async createUser(
-    data: UserCreationAttributes,
-    session: mongoose.mongo.ClientSession
-  ) {
-    const user = await this.userData.createUser(data, session);
-    const token = user && (await this.jwtService.create(user.id));
-
-    return this.generateUserResponse(
-      { user, token },
-      UserReponseMessage.USER_CREATED
+  public async getAllUsers(): Promise<AllUsersServiceReponse> {
+    const allUsers = await this.userData.getAllUsers();
+    return this.generateResponse(
+      { allUsers },
+      undefined,
+      allUsers ? allUsers.length : 0
     );
   }
 
-  public async getUser() {
-    const user = this.userDocument;
-    const token = user && (await this.jwtService.create(user.id));
+  public async getUserById(id: string): Promise<SingleUserServiceReponse> {
+    const user = await this.userData.getUserById(id);
 
-    return this.generateUserResponse(
-      { user, token },
-      UserReponseMessage.USER_SIGNED_IN
-    );
+    return this.generateResponse({ user });
   }
 
-  public async checkIfRegisteredEmailExists(
-    data: UserCreationAttributes
-  ): Promise<this> {
-    return this.checkEmailStatus(data.email, EmailStatus.USER_REGISTERED);
-  }
-
-  public async checkIfUserEixsts(data: SignInUser): Promise<this> {
-    this.checkIfRequestIsValid(data, AuthRequestMethod.SIGN_IN);
-    return this.checkEmailStatus(data.email, EmailStatus.USER_NOT_FOUND);
-  }
-
-  public async checkUserPasword(password: string): Promise<this> {
-    const isPasswordValid = await this.userDocument?.checkPassword(password);
-    if (!isPasswordValid) {
-      throw new CustomError("Password not valid", 401);
-    }
-
-    return this;
-  }
-
-  private checkIfRequestIsValid(
-    data: SignInUser,
-    requestType: AuthRequestMethod
-  ): boolean {
-    const { password, email } = data;
-
-    if (requestType === AuthRequestMethod.SIGN_IN && (!password || !email)) {
-      throw new CustomError(
-        "Invalid Request Data: Password and Email are required",
-        401
-      );
-    }
-    return true;
-  }
-
-  private async checkEmailStatus(
-    email: string,
-    checkType: EmailStatus
-  ): Promise<this> {
-    const user = await this.userData.getUserByEmail(email);
-    const emailStatus = this.emailService.generateEmailStatus(email);
-
-    switch (checkType) {
-      case EmailStatus.USER_REGISTERED:
-        if (user) emailStatus[EmailStatus.USER_REGISTERED]();
-        break;
-
-      case EmailStatus.USER_NOT_FOUND:
-        if (!user) emailStatus[EmailStatus.USER_NOT_FOUND]();
-        break;
-    }
-    this.userDocument = user;
-    return this;
-  }
-
-  private generateUserResponse(
-    data: {
-      token: string | null | undefined;
-      user: UserDocument | null | undefined;
-    },
-    checkType: UserReponseMessage
-  ): UserResponse | undefined {
-    if (!checkType) return;
-
+  private generateResponse<T>(data: T, responseMsg?: string, length?: number) {
     return {
-      data: { ...data },
       success: true,
-      message: checkType,
-    } as UserResponse;
+      ...(responseMsg && { message: responseMsg }),
+      ...(length && { length: length }),
+      data,
+    };
   }
 }
 
-export default UserService;
+const userService = UserService.getInstance();
+
+export default userService;

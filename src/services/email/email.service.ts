@@ -1,7 +1,6 @@
 import { CustomError } from "../../helpers";
 
 export enum EmailStatus {
-  USER_REGISTERED = "registered",
   USER_NOT_FOUND = "Not found",
 }
 
@@ -16,12 +15,15 @@ export class EmailService {
     return EmailService.instance;
   }
 
-  public generateEmailStatus(email: string): {
+  public userEmailNotFound(email: string) {
+    const emailStatus = this.generateEmailStatus(email);
+    return emailStatus[EmailStatus.USER_NOT_FOUND]();
+  }
+
+  private generateEmailStatus(email: string): {
     [key in EmailStatus]: () => void;
   } {
     const emailStatus = {
-      [EmailStatus.USER_REGISTERED]: () =>
-        this.checkEmailStatus(email, EmailStatus.USER_REGISTERED),
       [EmailStatus.USER_NOT_FOUND]: () =>
         this.checkEmailStatus(email, EmailStatus.USER_NOT_FOUND),
     };
@@ -34,10 +36,6 @@ export class EmailService {
     let statusCode: number;
 
     switch (checkType) {
-      case EmailStatus.USER_REGISTERED:
-        errorMessage = `User with email: ${email} exists, please use other email`;
-        statusCode = 409;
-        break;
       case EmailStatus.USER_NOT_FOUND:
         errorMessage = `User not found, User with email: ${email} doesn't exist`;
         statusCode = 404;

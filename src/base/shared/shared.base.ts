@@ -11,6 +11,10 @@ class SharedBase {
       return this.handleCastError(error);
     }
 
+    if (error instanceof Error && error.name === "RangeError") {
+      console.log("RangeError");
+    }
+
     if (error instanceof mongoose.Error) {
       if (error.name === "ValidationError") {
         return this.handleValidationError(error);
@@ -37,9 +41,17 @@ class SharedBase {
 
   private handleDuplicateDB(err: any): CustomError {
     const value: string = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-    const errorMsg = `Duplicate Field value: ${value}, please use another value`;
+    let errorMsg: string;
+    let statusCode = 400;
 
-    return new CustomError(errorMsg, 400);
+    if (value.match(/\S+@\S+\.\S+/)?.input) {
+      errorMsg = `User with email: ${value} exists, please use other email`;
+      statusCode = 409;
+    } else {
+      errorMsg = `Duplicate Field value: ${value}, please use another value`;
+    }
+
+    return new CustomError(errorMsg, statusCode);
   }
 
   private handleCastError(err: any): CustomError {
