@@ -8,6 +8,8 @@ import {
 import { subscriptionService } from "../../services";
 
 import { catchAyncError } from "../../helpers";
+import { workflowClient } from "../../config/upstash";
+import { SERVER_URL } from "../../config/env";
 
 export const createSubscription = catchAyncError(
   async (
@@ -21,7 +23,20 @@ export const createSubscription = catchAyncError(
 
     const response = await subscriptionService.createSubscription(data);
 
-    res.status(201).json(response);
+    // trigger the workflow
+
+    const { workflowRunId } = await workflowClient.trigger({
+      url: `${SERVER_URL}/api/v1/workflows/subscription/reminder`,
+      body: {
+        subscriptionId: response.data.subscription?.id,
+      },
+      headers: {
+        "content-type": "application/json",
+      },
+      retries: 0,
+    });
+
+    res.status(201).json({ ...response, workflowRunId });
   }
 );
 
