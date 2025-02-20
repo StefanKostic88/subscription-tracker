@@ -5,6 +5,7 @@ config({
 });
 
 const PORT = Number(process.env.PORT);
+const SERVER_URL = process.env.SERVER_URL as string;
 const NODE_ENV = process.env.NODE_ENV || "development";
 const DB_URI = process.env.DB_URI;
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -19,6 +20,7 @@ const QSTASH_NEXT_SIGNING_KEY = process.env.QSTASH_NEXT_SIGNING_KEY as string;
 
 export {
   PORT,
+  SERVER_URL,
   NODE_ENV,
   DB_URI,
   JWT_SECRET,
