@@ -2,23 +2,19 @@ import dayjs from "dayjs";
 
 import { serve } from "@upstash/workflow/express";
 import { Subscription } from "../../models";
+import { WorkflowContext } from "@upstash/workflow";
 
 const reminders = [7, 5, 2, 1];
 
-// type CustomWorkflowContext = WorkflowContext<{ subscriptionId: string }>;
+type CustomWorkflowContext = WorkflowContext<{ subscriptionId: string }>;
 
-export const sendReminders = serve(async (context: any) => {
-  console.log("CONTEXT", context.requestPayload);
+export const sendReminders = serve(async (context: CustomWorkflowContext) => {
   const { subscriptionId } = context.requestPayload;
   const subscription = await fetchSubscription(context, subscriptionId);
-
-  console.log("WORKFLOW SUB", subscription);
 
   if (!subscription || subscription.status !== "active") return;
 
   const renewalDate = dayjs(subscription.renewalDate);
-
-  console.log(renewalDate.isBefore(dayjs()));
 
   if (renewalDate.isBefore(dayjs())) {
     console.log(
@@ -30,10 +26,9 @@ export const sendReminders = serve(async (context: any) => {
 
   for (const daysBefore of reminders) {
     const reminderDate = renewalDate.subtract(daysBefore, "day");
-    console.log(reminderDate);
+
     const label = `Reminder ${daysBefore} days before`;
-    console.log(label);
-    console.log(reminderDate.isAfter(dayjs()));
+
     if (reminderDate.isAfter(dayjs())) {
       await sleepUntilReminder(context, label, reminderDate);
     }
@@ -41,8 +36,10 @@ export const sendReminders = serve(async (context: any) => {
   }
 });
 
-const fetchSubscription = async (context: any, subscriptionId: string) => {
-  console.log(subscriptionId);
+const fetchSubscription = async (
+  context: CustomWorkflowContext,
+  subscriptionId: string
+) => {
   return await context.run("get subscription", async () => {
     return Subscription.findById(subscriptionId).populate({
       path: "user",
@@ -52,7 +49,7 @@ const fetchSubscription = async (context: any, subscriptionId: string) => {
 };
 
 const sleepUntilReminder = async (
-  context: any,
+  context: CustomWorkflowContext,
   label: string,
   date: dayjs.Dayjs
 ) => {
@@ -60,7 +57,10 @@ const sleepUntilReminder = async (
   await context.sleepUntil(label, date.toDate());
 };
 
-const triggerReminder = async (context: any, label: string) => {
+const triggerReminder = async (
+  context: CustomWorkflowContext,
+  label: string
+) => {
   return await context.run(label, () => {
     console.log(`Tringgering ${label} reminder`);
     //Send email, or sms or push  notifkation
