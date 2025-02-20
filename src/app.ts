@@ -2,7 +2,12 @@ import express, { Express, Router, json, urlencoded } from "express";
 import cookieParser from "cookie-parser";
 import { Server, IncomingMessage, ServerResponse } from "http";
 import { PORT, NODE_ENV } from "./config/env";
-import { userRouter, authRouter, subscriptionRouter } from "./routes";
+import {
+  userRouter,
+  authRouter,
+  subscriptionRouter,
+  workflowRouter,
+} from "./routes";
 import DataBaseConnection from "./database/mongodb";
 import {
   errorHandlerMiddleware,
@@ -57,6 +62,7 @@ export class App extends CoreApp {
     router.use("/auth", authRouter);
     router.use("/users", userRouter);
     router.use("/subscriptions", subscriptionRouter);
+    router.use("/workflows", workflowRouter);
 
     // Unsuported route error
     router.all("*", unsupportedRoutes);
